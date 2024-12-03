@@ -45,6 +45,17 @@ class Day1 extends Command
         }, 0);
 
         $this->info("Total Difference: $output");
+
+        $this->info('Part 2');
+
+        $output = $firstSet->reduce(function ($carry, $number1) use ($secondSet) {
+            $numberOfTimes = $secondSet->filter(fn($number) => $number === $number1)->count();
+            $carry += $number1 * $numberOfTimes;
+            return $carry;
+        }, 0);
+
+        $this->info("Total Similarity: $output");
+
     }
 
     /**
