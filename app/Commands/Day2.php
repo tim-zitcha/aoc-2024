@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Service\SafeReport;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -26,34 +27,28 @@ class Day2 extends Command
     /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): void
     {
-        $this->info('Day 2');
-        $this->info('Part 1');
+        $this->info('Day 2 - Part 1');
 
-        $reports = Str::of(file_get_contents(__DIR__ . '/../Data/day2.txt'))
+        $safeReports = $this->processFile((new SafeReport())->compare(...));
+        $this->info("Total safe reports: {$safeReports->count()}");
+
+        $this->info('Day 2 - Part 2');
+
+        $safeReportsWithCorrection = $this->processFile((new SafeReport())->compareWithCorrection(...));
+
+        $this->info("Total safe reports with correction: {$safeReportsWithCorrection->count()}");
+    }
+
+    protected function processFile($callback): Collection
+    {
+        return Str::of(file_get_contents(__DIR__ . '/../Data/day2.txt'))
             ->explode("\n")
+            ->filter(fn($line) => !empty($line))
             ->map(fn($number) => Str::of($number)
                 ->explode(' ')
                 ->map(fn($number) => (int)$number)
-            );
-
-        $reports->reduce(function ($carry, $report) {
-            $carry += $this->isReportSafe($report) ? 1 : 0;
-            return $carry;
-        }, 0);
-    }
-
-    /**
-     * Define the command's schedule.
-     */
-    public function schedule(Schedule $schedule): void
-    {
-        // $schedule->command(static::class)->everyMinute();
-    }
-
-    protected function isReportSafe(Collection $report): bool
-    {
-
+            )->filter($callback);
     }
 }
